@@ -1,0 +1,32 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Normalized job input (intake -> calc). 入力契約",
+  "type": "object",
+  "required": ["job_id", "received_at", "as_of", "source", "display_name", "name_kana", "email", "question", "systems",
+               "birth_date", "birth_time", "birth_time_precision", "tarot_seed", "consent", "profile", "intake_notes"],
+  "properties": {
+    "job_id": {"type": "string", "pattern": "^[0-9]{8}-[0-9]{6}-[0-9a-f]{8}$"},
+    "received_at": {"type": "string"},
+    "as_of": {"type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"},
+    "source": {"type": "string", "enum": ["cli", "local_form", "google_form", "google_form_street", "sample", "test"]},
+    "display_name": {"type": "string", "minLength": 1},
+    "name_kana": {"type": "string", "minLength": 1},
+    "surname_kanji": {"type": "string"},
+    "given_kanji": {"type": "string"},
+    "email": {"type": "string", "pattern": "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$"},
+    "question": {"type": "string", "minLength": 1},
+    "systems": {"type": "array", "minItems": 1, "maxItems": 3, "uniqueItems": true,
+                "items": {"type": "string", "enum": ["bazi", "tarot", "kyusei", "numerology", "seimei", "westastro", "vedic",
+                                                     "shukuyo", "maya", "birthcard", "kabbalah", "eto", "sanmei", "birthstone"]}},
+    "preset": {"type": ["string", "null"]},
+    "birth_date": {"type": ["string", "null"], "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"},
+    "birth_time": {"type": ["string", "null"], "pattern": "^[0-9]{2}:[0-9]{2}$"},
+    "birth_time_precision": {"type": "string", "enum": ["exact", "approximate", "unknown"]},
+    "birth_place": {"type": "string"},
+    "daiun_basis": {"type": ["string", "null"], "enum": ["female", "male", null]},
+    "tarot_seed": {"type": "string", "minLength": 8},
+    "consent": {"type": "boolean", "const": true},
+    "profile": {"type": "object", "additionalProperties": {"type": "string"}},
+    "intake_notes": {"type": "array", "items": {"type": "string"}}
+  }
+}

@@ -1,0 +1,1 @@
+synced by tools/sync_from_app.py from the app's uranai/, schemas/, assets/design/

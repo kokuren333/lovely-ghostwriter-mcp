@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8">
+<title>{{ brand.title }}</title>
+<style>
+  /* 感熱紙対応: 純白背景・黒のみ・グレー/薄線なし・最小文字 8.5pt・最小線幅 1.2px(=0.9pt)・余白14mm */
+  @page { size: A4; margin: 14mm; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: #fff; color: #000; }
+  body { font-family: "BIZ UDGothic", "BIZ UDPGothic", "Yu Gothic", sans-serif; font-size: {{ t.font_pt }}pt; line-height: 1.3; }
+  .b { font-weight: 700; }
+  header { display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 3px solid #000; padding-bottom: 1.4mm; }
+  .brand { font-size: 10pt; font-weight: 700; letter-spacing: .04em; }
+  /* 念獣の線画エンブレム（assets/design/beast-line.svg）: 白黒ベクター・ヘッダーの屋号の脇に1か所だけ・直径16mm */
+  .hl { display: flex; align-items: center; gap: 2.4mm; }
+  .hl svg.emblem { display: block; flex: none; }
+  .title { font-size: 17pt; font-weight: 700; letter-spacing: .08em; }
+  .who { text-align: right; }
+  .who .name { font-size: 14pt; font-weight: 700; }
+  .who div { font-size: 9pt; }
+  .headline { font-size: 12.5pt; font-weight: 700; text-align: center; padding: 1.1mm 0; border-bottom: 2px solid #000; }
+  .blend { display: flex; gap: 3mm; align-items: center; border: 2px solid #000; margin-top: 1.5mm; padding: 1.1mm 2.5mm; }
+  .blend .tag { font-size: 9pt; font-weight: 700; border: 2px solid #000; padding: .3mm 1.6mm; white-space: nowrap; }
+  .blend .mix { font-size: 13pt; font-weight: 700; white-space: nowrap; }
+  .blend .roles { font-size: 8.5pt; line-height: 1.3; }
+  .flavor { font-size: 9pt; margin-top: .8mm; }
+  h2 { font-size: 10.5pt; font-weight: 700; border-bottom: 2px solid #000; margin: 1.3mm 0 .8mm; padding-bottom: .2mm; }
+  .charts { display: grid; grid-template-columns: {% for f in facts[:3] %}{{ '2.1fr' if f.table else '1fr' }} {% endfor %}; gap: 2mm; }
+  .bz { display: flex; gap: 2mm; align-items: flex-start; margin-top: 1mm; }
+  .box { border: 2px solid #000; padding: 1.1mm 1.6mm; }
+  .box h3 { font-size: 10pt; font-weight: 700; border-bottom: 2px solid #000; margin-bottom: 1mm; }
+  table { border-collapse: collapse; width: 100%; }
+  table.meishiki td, table.meishiki th { border: 2px solid #000; text-align: center; padding: .1mm .5mm; font-size: 9pt; }
+  table.meishiki tr.big td { font-size: 11.5pt; font-weight: 700; }
+  table.kv td { padding: .15mm 0; vertical-align: top; font-size: 9pt; }
+  table.kv td.k { white-space: nowrap; padding-right: 2mm; font-weight: 700; }
+  .note { font-size: 8.5pt; }
+  .warn { font-size: 8.5pt; }
+  .themes { display: grid; grid-template-columns: 1fr 1fr; gap: 2mm; }
+  .theme .hd { display: flex; justify-content: space-between; align-items: baseline; border-bottom: 2px solid #000; margin-bottom: .8mm; }
+  .theme .lab { font-size: 11pt; font-weight: 700; }
+  .theme .sc { font-size: 10.5pt; font-weight: 700; letter-spacing: .05em; }
+  .two { display: grid; grid-template-columns: 1.15fr 1fr; gap: 2mm; }
+  ul.dots { list-style: none; }
+  ul.dots li::before { content: "・"; }
+  .q { font-weight: 700; margin-bottom: .6mm; }
+  .ln { display: grid; grid-template-columns: auto 1fr; column-gap: 1.2mm; margin-top: .4mm; }
+  .k { font-size: 8.5pt; font-weight: 700; border: 2px solid #000; padding: 0 .8mm; line-height: 1.25; align-self: start; margin-top: .2mm; }
+  .k.inv { border-width: 3px; }
+  .frame { font-size: 8.5pt; margin-top: .8mm; border-top: 2px solid #000; padding-top: .5mm; }
+  footer { border-top: 3px solid #000; margin-top: 1.6mm; padding-top: 1.3mm; display: flex; gap: 3mm; justify-content: space-between; align-items: center; }
+  footer .legal { font-size: 8.5pt; line-height: 1.32; }
+</style></head>
+<body>
+<header>
+  <div class="hl">{% if show_emblem %}{{ emblem_line }}{% endif %}<div><div class="brand">{{ brand.shop_name }}</div><div class="title">{{ brand.title }}</div></div></div>
+  <div class="who"><div class="name">{{ job.display_name }} さん</div><div>{{ birth_label }}</div><div>発行日 {{ calc.as_of }}</div></div>
+</header>
+<div class="headline">{{ t.headline }}</div>
+
+<div class="blend">
+  <span class="tag">BLEND</span>
+  <span class="mix">{{ blend_label }}</span>
+  <div class="roles">
+    {% if not t.compact %}{% for f in facts %}<span class="b">{{ f.name }}</span>＝{{ roles[f.system] }}{% if not loop.last %}　{% endif %}{% endfor %}{% endif %}
+    <div class="flavor">味わい：{{ r.integration.flavor }}</div>
+  </div>
+</div>
+
+<h2>占術ごとの結果</h2>
+<div class="charts">
+{% for f in facts %}
+  <div class="box">
+    <h3>{{ f.name }}{% if f.status != 'ok' %}（一部判定不可）{% endif %}</h3>
+    {% if f.table %}
+    <table class="meishiki">
+      <tr>{% for h in f.table.head %}<th>{{ h }}</th>{% endfor %}</tr>
+      {% for row in f.table.rows %}<tr class="{{ 'big' if loop.index <= 2 else '' }}">{% for c in row %}<td>{{ c }}</td>{% endfor %}</tr>{% endfor %}
+    </table>
+    {% endif %}
+    {% if f.elements_svg %}<div class="bz"><div>{{ f.elements_svg }}</div>
+    <table class="kv">{% for k, v in f.rows %}<tr><td class="k">{{ k }}</td><td>{{ v }}</td></tr>{% endfor %}</table></div>
+    <div class="note">五行{{ f.elements_basis }}字　模様：木＝黒 火＝縦 土＝横 金＝斜 水＝白</div>
+    {% else %}
+    <table class="kv">{% for k, v in f.rows %}<tr><td class="k">{{ k }}</td><td>{{ v }}</td></tr>{% endfor %}</table>
+    {% endif %}
+    {% if t.sys.get(f.system) %}<div style="margin-top:.6mm">{{ t.sys[f.system] }}</div>{% endif %}
+    {% if f.warnings and t.show_warnings %}<div class="warn">※{{ f.warnings[0] }}</div>{% endif %}
+  </div>
+{% endfor %}
+</div>
+
+<h2>4つのテーマ — 占術の所見 × 心理学のレンズ</h2>
+<div class="themes">
+{% for th in themes %}{% set tt = t.themes[th.key] %}
+  <div class="box theme">
+    <div class="hd"><span class="lab">{{ th.label }}</span><span class="sc">{{ th.stars }} {{ th.score }}/5</span></div>
+    <div class="ln"><span class="k">占</span><div>{{ tt.finding }}</div></div>
+    <div class="ln"><span class="k">心</span><div><span class="b">{{ tt.concept }}</span>：{{ tt.lens }}</div></div>
+    <div class="ln"><span class="k inv">一歩</span><div class="b">{{ tt.step }}</div></div>
+  </div>
+{% endfor %}
+</div>
+
+<div class="two">
+  <div>
+    <h2>統合解釈 — ブレンドの味わい</h2>
+    <div class="box">
+      <div><span class="b">一致：</span>{{ t.agreements|join(' ／ ') }}</div>
+      <div><span class="b">ずれ：</span>{{ t.differences|join(' ／ ') }}</div>
+      <div><span class="b">あなたの回答{% if r.integration.concepts %}（{{ r.integration.concepts|join('・') }}）{% endif %}：</span>{{ t.self_report }}</div>
+      <div style="margin-top:.6mm">{{ t.synthesis }}</div>
+      <div class="frame">{{ t.frame }}</div>
+    </div>
+  </div>
+  <div>
+    <h2>占ってほしいことへの答え</h2>
+    <div class="box">
+      <div class="q">Q. {{ r.adopted_question }}</div>
+      <div class="ln"><span class="k">占</span><div>{{ t.answer.finding }}</div></div>
+      <div class="ln"><span class="k">心</span><div><span class="b">{{ t.answer.concept }}</span>：{{ t.answer.lens }}</div></div>
+      <div class="ln"><span class="k inv">一歩</span><div class="b">{{ t.answer.step }}</div></div>
+      <div class="note" style="margin-top:.6mm"><span class="b">気をつけたいこと：</span>{{ t.caution }}</div>
+    </div>
+  </div>
+</div>
+{% if job.intake_notes %}<div class="note">受付時の調整：{{ job.intake_notes|join(' ／ ') }}</div>{% endif %}
+
+<footer>
+  <div class="legal">
+    <span class="b">{{ brand.shop_name }}</span>　{{ policy.tiny }}<br>
+    削除請求：{{ policy.contact }}　カラー版はメールでお届けします。<br>
+    {{ fan_notice }}
+  </div>
+</footer>
+</body></html>

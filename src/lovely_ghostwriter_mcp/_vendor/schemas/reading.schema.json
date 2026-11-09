@@ -1,0 +1,364 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Claude reading (structured) — 鑑定文の構造化データ（心理学レンズ＋実用化・ケルティッククロス＋2ページ目の予言詩。docs/READING_STYLE.md）",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "headline",
+    "summary",
+    "adopted_question",
+    "blend_roles",
+    "system_readings",
+    "themes",
+    "integration",
+    "answer",
+    "advice",
+    "focus_note",
+    "poem"
+  ],
+  "properties": {
+    "headline": {
+      "type": "string",
+      "description": "鑑定のひとこと（全体の印象を表すキャッチ）。全角30字以内"
+    },
+    "summary": {
+      "type": "string",
+      "description": "鑑定の要旨。メール本文の冒頭に使う。全角90字以内・1〜2文"
+    },
+    "adopted_question": {
+      "type": "string",
+      "description": "回答対象として採用した『占ってほしいこと』。複数書かれていた場合は最初の1件だけを要約して書く。未記入なら『これからの過ごし方』。全角40字以内"
+    },
+    "blend_roles": {
+      "type": "array",
+      "description": "選ばれた占術ごとに、この鑑定で担当した観点",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "system",
+          "role"
+        ],
+        "properties": {
+          "system": {
+            "type": "string",
+            "description": "占術ID（calcのsystems）"
+          },
+          "role": {
+            "type": "string",
+            "description": "担当観点。全角20字以内"
+          }
+        }
+      }
+    },
+    "system_readings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "system",
+          "key_facts",
+          "reading",
+          "reading_print"
+        ],
+        "properties": {
+          "system": {
+            "type": "string"
+          },
+          "key_facts": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "計算結果の要点（calcに書かれた値だけを書き写す。最大4つ、各全角24字以内）"
+          },
+          "reading": {
+            "type": "string",
+            "description": "この占術から読めること（象徴の説明）。全角110字以内"
+          },
+          "reading_print": {
+            "type": "string",
+            "description": "短縮版。全角50字以内"
+          }
+        }
+      }
+    },
+    "themes": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "work",
+        "love",
+        "talent",
+        "money"
+      ],
+      "properties": {
+        "work": {
+          "$ref": "#/definitions/theme"
+        },
+        "love": {
+          "$ref": "#/definitions/theme"
+        },
+        "talent": {
+          "$ref": "#/definitions/theme"
+        },
+        "money": {
+          "$ref": "#/definitions/theme"
+        }
+      }
+    },
+    "integration": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "agreements",
+        "differences",
+        "self_report_link",
+        "self_report_print",
+        "concepts",
+        "synthesis",
+        "synthesis_print",
+        "flavor"
+      ],
+      "properties": {
+        "agreements": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "占術間で一致する点（1〜3個、各全角45字以内）。同じ生年月日由来の一致は独立した証拠と書かない"
+        },
+        "differences": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "ずれる点（1〜3個、各全角45字以内）。優劣をつけず併記"
+        },
+        "self_report_link": {
+          "type": "string",
+          "description": "性格の自己申告と占術結果の一致点・ギャップを、心理学の概念（concepts のどれか）と結びつけて書く。全角100字以内"
+        },
+        "self_report_print": {
+          "type": "string",
+          "description": "self_report_link の短縮版。全角50字以内"
+        },
+        "concepts": {
+          "type": "array",
+          "maxItems": 2,
+          "items": {
+            "type": "string"
+          },
+          "description": "統合解釈と自己申告の照合で使う心理学概念（許可リストの正式名、1〜2個。テーマで使ったものと重複してよい）"
+        },
+        "synthesis": {
+          "type": "string",
+          "description": "統合解釈（ブレンドの総評）。concepts の概念に触れる。全角200字以内"
+        },
+        "synthesis_print": {
+          "type": "string",
+          "description": "統合解釈の短縮版。全角90字以内"
+        },
+        "flavor": {
+          "type": "string",
+          "description": "ブレンドの味わいを一言で（カクテルの説明のように）。全角28字以内"
+        }
+      }
+    },
+    "answer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "finding",
+        "concept",
+        "lens",
+        "why",
+        "step",
+        "print_finding",
+        "print_lens"
+      ],
+      "properties": {
+        "finding": {
+          "type": "string",
+          "description": "①占術の所見：ご質問に対して calc に根拠のある所見（根拠の値を文中に含める）。本人の悩み・自由記入の具体的な言葉を引き受けて、本人の状況に置いて書く（言い換えで終わらせない）。全角110字以内"
+        },
+        "concept": {
+          "type": "string",
+          "description": "②で使う心理学概念（許可リストの正式名を1つ）"
+        },
+        "lens": {
+          "type": "string",
+          "description": "②心理学のレンズ：所見をその概念に翻訳して1〜2文で解説。全角80字以内"
+        },
+        "why": {
+          "type": "string",
+          "description": "③なぜそう言えるか：占いを外しても成り立つ心の機序を短く。全角80字以内"
+        },
+        "step": {
+          "type": "string",
+          "description": "④具体的な一歩：本人の状況（自由記入の言葉）に置いた、実行可能な行動。いつ／どのくらいの頻度で／誰に／何と言うか、のいずれかを必ず含む。精神論（前向きに・自分を信じて等）で終わらせない。全角40字以内"
+        },
+        "print_finding": {
+          "type": "string",
+          "description": "①の短縮版。全角45字以内"
+        },
+        "print_lens": {
+          "type": "string",
+          "description": "②と③をまとめた短縮版（概念名は書かなくてよい）。全角55字以内"
+        }
+      }
+    },
+    "advice": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "caution"
+      ],
+      "properties": {
+        "caution": {
+          "type": "string",
+          "description": "気をつけたいこと（全角45字以内、断定・脅しは禁止）"
+        }
+      }
+    },
+    "focus_note": {
+      "type": "string",
+      "description": "助言の焦点をどこから作ったか（全角60字以内）。自由記入（worries/self_desc）があれば空文字でよい。自由記入が空なら『自由記入が空のため、気になるテーマ「仕事」と性格の回答から焦点を作りました』のように正直に書く"
+    },
+    "tarot_cross": {
+      "type": "array",
+      "description": "タロットがブレンドにある場合のみ: ケルティッククロス10枚の位置ごとの読み（calc の spread と同じ順・同じ position。10件）。タロットが無ければ空配列",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "position",
+          "note"
+        ],
+        "properties": {
+          "position": {
+            "type": "string",
+            "description": "calc.results.tarot.spread[].position（present, challenge, …, outcome）"
+          },
+          "note": {
+            "type": "string",
+            "description": "その位置のカードを、本人の悩み・状況に結びつけた一言（カード名の列挙は不可）。全角30字以内"
+          }
+        }
+      }
+    },
+    "poem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "title",
+        "stanzas",
+        "motifs"
+      ],
+      "description": "2ページ目の予言詩（BRIEF §4。自動筆記の予言詩）。seed テーマ×占術結果×本人の入力を、引用ではなく象徴とモチーフで織り込み、未来を暗示する抽象的・文学的な詩。助言・命令・教訓・励ましは書かない（p1 の役割）。不吉な暗示は象徴に留め、死・事故・病などの断定的な宣告はしない",
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "詩のタイトル（全角16字以内）。seed テーマのモチーフを感じさせる、予言めいた題"
+        },
+        "stanzas": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 8,
+          "items": {
+            "type": "string",
+            "description": "1連。行は改行（\n）で区切る。四行連（4行）を基本に2〜5行。1行は全角12〜34字"
+          },
+          "description": "詩の本文（連の配列）。4〜7連を基本、全連の合計は全角600〜900字（改行を除く）、合計32行以内。本人の言葉をそのまま引用しない（12字以上の逐語一致は不可）。名前・個人情報は書かない"
+        },
+        "motifs": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 5,
+          "description": "詩に織り込んだモチーフの申告（機械検査用）。2つ以上、うち本人の入力由来を1つ以上（入力が空なら calc 由来だけでよい）",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "source",
+              "origin",
+              "symbol"
+            ],
+            "properties": {
+              "source": {
+                "type": "string",
+                "description": "出どころ。本人の入力は input.question / input.worries / input.self_desc / input.about_me / input.concern_theme / input.personality.decision 等、計算結果は calc.<占術ID>（例 calc.tarot.spread[9]、calc.bazi）"
+              },
+              "origin": {
+                "type": "string",
+                "description": "出どころにある元の語・値をそのままの表記で（例: 後輩、ワンドの9、偏印）。全角2〜16字"
+              },
+              "symbol": {
+                "type": "string",
+                "description": "それを置き換えた象徴の語（詩の本文に同じ表記で出てくること。例: 若い燕、九本の杖、欠けた月）。全角2〜12字"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "theme": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "score",
+        "basis",
+        "finding",
+        "concept",
+        "lens",
+        "why",
+        "step",
+        "print_finding",
+        "print_lens"
+      ],
+      "properties": {
+        "score": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 5,
+          "description": "今の巡りの目安（1〜5）。計算結果と矛盾しない範囲で"
+        },
+        "basis": {
+          "type": "string",
+          "description": "主に根拠にした占術と値（全角30字以内）"
+        },
+        "finding": {
+          "type": "string",
+          "description": "①占術の所見：calc に根拠を持つ所見。全角75字以内"
+        },
+        "concept": {
+          "type": "string",
+          "description": "②で使う心理学概念（許可リストの正式名を1つ）"
+        },
+        "lens": {
+          "type": "string",
+          "description": "②心理学のレンズ：所見をその概念に翻訳して1〜2文で解説。全角65字以内"
+        },
+        "why": {
+          "type": "string",
+          "description": "③なぜそう言えるか：占いを外しても成り立つ心の機序。全角65字以内"
+        },
+        "step": {
+          "type": "string",
+          "description": "④具体的な一歩：本人の悩み・性格回答に結びついた、やったか確かめられる行動。いつ／頻度／誰に／何と言うか のいずれかを含む。精神論で終わらせない。全角34字以内"
+        },
+        "print_finding": {
+          "type": "string",
+          "description": "①の短縮版。全角30字以内"
+        },
+        "print_lens": {
+          "type": "string",
+          "description": "②と③をまとめた短縮版（概念名は書かなくてよい）。全角45字以内"
+        }
+      }
+    }
+  }
+}

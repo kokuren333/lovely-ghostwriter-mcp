@@ -1,0 +1,17 @@
+{
+ "_note": "架空の人物（サンプル）。実在の人物・実データではありません。",
+ "preset": "love",
+ "display_name": "星野 ミライ",
+ "name_kanji": "星野 未来",
+ "name_kana": "ほしの みらい",
+ "birth_date": "1995-04-12",
+ "birth_time": "08:30",
+ "birth_place": "東京都",
+ "gender": "female",
+ "question": "来年、新しい仕事に挑戦するべき？",
+ "worries": "今の職場の先輩に恩があり、辞めたいと言い出せない。夜にカフェで求人を眺めている",
+ "self_desc": "慎重だけど、好きなことには一直線",
+ "concern_theme": "仕事",
+ "personality": {"decision": "じっくり考えてから決める", "stress": "ひとりで散歩する"},
+ "as_of": "2026-11-10"
+}

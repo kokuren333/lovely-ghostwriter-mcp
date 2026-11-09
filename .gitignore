@@ -1,0 +1,14 @@
+__pycache__/
+*.pyc
+.venv/
+venv/
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+lgw-output/
+outputs/
+tests/_out/
+src/lovely_ghostwriter_mcp/_vendor.staging/
+tools/.sync-denylist.txt
+.env

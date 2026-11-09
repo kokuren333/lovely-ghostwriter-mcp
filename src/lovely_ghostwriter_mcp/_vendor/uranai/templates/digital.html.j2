@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8">
+<title>{{ brand.title }} — {{ brand.shop_name }}</title>
+<style>
+  /* デジタル版（カラー）: A4 ちょうど2ページ（AMENDMENT_09 §D）
+     1ページ目＝鑑定プロフィール、2ページ目＝その人に向けた散文詩。
+     背景アート・オーナメントは assets/design/ の共通素材（AMENDMENT_10。Codex imagegen で一度だけ生成）、
+     念獣エンブレム（assets/design/beast-emblem.png）は各ページ1か所だけ。文字はすべて実テキスト（画像に焼き込まない）。
+     各ページは高さ 297mm 固定。はみ出しはブラウザで計測し、fit.py の段階で詰める（縦に伸ばさない）。 */
+  /* 配色（天使の自動筆記）: 変数名は旧来のまま（navy=深い茄子紫の地、gold=銀ラベンダーのアクセント）。値だけを紫〜銀に差し替え */
+  :root { --navy:#140A22; --navy2:#1E1030; --gold:#CDB8EC; --gold2:#B89AE0; --ivory:#F6F1FA; --ink:#E9E2F0; --mute:#B3A7C4;
+          --scrim:rgba(17,8,30,.80); --scrim2:rgba(24,12,42,.86); --line:rgba(184,154,224,.42); --teal:#9ED3E0; --rose:#EBA8C8; }
+  @page { size: A4; margin: 0; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: var(--navy); }
+  body { font-family: "Noto Sans JP", "Yu Gothic", "BIZ UDPGothic", sans-serif; color: var(--ink); }
+  .serif { font-family: "Noto Serif JP", "Yu Mincho", "BIZ UDPMincho", serif; }
+  .sheet { width: 210mm; height: 297mm; overflow: hidden; position: relative; break-after: page; page-break-after: always;
+           background-color: var(--navy); background-repeat: no-repeat; background-size: 210mm auto; background-position: center top; }
+  .sheet:last-child { break-after: auto; page-break-after: auto; }
+
+  /* ---------------- 1ページ目: 鑑定プロフィール ---------------- */
+  .p1 { background-image: url("{{ design.page1_bg }}"); background-position: center -13mm; font-size: {{ t.font_pt }}pt; line-height: 1.45;
+        padding: 12.5mm 9mm 6.5mm; display: flex; flex-direction: column; }
+  .hero { display: grid; grid-template-columns: auto 1fr auto; column-gap: 4mm; align-items: center; }
+  .emblem1 { width: 20mm; height: 20mm; display: block; }
+  .brand { color: var(--gold); letter-spacing: .22em; font-size: 8.4pt; font-weight: 700; }
+  .title { font-size: 17pt; font-weight: 600; letter-spacing: .14em; line-height: 1.25; color: var(--ivory); }
+  .who { text-align: right; }
+  .who .name { font-size: 13pt; font-weight: 700; color: var(--ivory); }
+  .who div { font-size: 7.8pt; color: var(--mute); }
+  .brand, .title, .who, .headline { text-shadow: 0 0 .8mm rgba(12,5,24,.95), 0 0 2.2mm rgba(12,5,24,.85); }  /* 背景上部の羽ペン・幽体の上でも読めるように（配置は不変） */
+  .headline { margin-top: 1.6mm; text-align: center; font-size: 12.4pt; color: var(--ivory); letter-spacing: .06em; }
+  .orn { display: block; margin: .6mm auto 0; width: 96mm; height: auto; opacity: .95; }
+  .card { background: var(--scrim); border: .3mm solid var(--line); border-radius: 2.4mm; padding: 1.6mm 2.6mm; }
+  .blend { margin-top: 1.6mm; display: flex; gap: 4mm; align-items: center; }
+  .blend .mix { font-size: 12pt; font-weight: 700; color: var(--gold); white-space: nowrap; }
+  .blend .mix span.x { color: var(--ivory); padding: 0 1mm; font-weight: 400; }
+  .chips { display: flex; flex-wrap: wrap; gap: .8mm 1.4mm; }
+  .chip { border: .25mm solid var(--line); border-radius: 99px; padding: 0 2.2mm; font-size: .92em; color: var(--ink); }
+  .chip b { color: var(--gold); }
+  .flavor { color: var(--ivory); font-style: italic; font-size: .95em; }
+  h2 { font-size: 9.8pt; color: var(--gold); margin: 1.9mm 0 1mm; display: flex; align-items: center; gap: 1.8mm; letter-spacing: .08em; font-weight: 700; }
+  h2:before { content: "☾"; font-size: 1.05em; color: var(--gold); }
+  h2 small { font-size: .78em; color: var(--mute); font-weight: 400; letter-spacing: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+  h2 .h { white-space: nowrap; }
+  {% set gfacts = facts | rejectattr('cross') | list %}
+  .grid { display: grid; gap: 1.8mm; grid-template-columns: repeat({{ [gfacts|length, 3]|min if gfacts else 1 }}, 1fr); }
+  .crossread { margin-top: 1mm; }
+  .card h3 { font-size: 1.05em; color: var(--gold); border-bottom: .3mm solid var(--line); padding-bottom: .4mm; margin-bottom: 1mm; }
+  table { border-collapse: collapse; width: 100%; }
+  table.ms td, table.ms th { border: .25mm solid var(--line); text-align: center; padding: 0 .6mm; }
+  table.ms th { background: rgba(184,154,224,.22); color: var(--ivory); font-weight: 500; }
+  table.ms tr.big td { font-size: 1.3em; font-weight: 700; color: var(--ivory); }
+  table.kv td { padding: 0; vertical-align: top; }
+  table.kv td.k { color: var(--gold); white-space: nowrap; padding-right: 2mm; font-weight: 700; }
+  .bars .row { display: flex; align-items: center; gap: 1.5mm; margin: .3mm 0; }
+  .bars .el { width: 1.4em; font-weight: 700; }
+  .bars .track { flex: 1; height: 2mm; background: rgba(246,241,250,.14); border-radius: 99px; overflow: hidden; }
+  .bars .fill { height: 100%; border-radius: 99px; }
+  .small { font-size: .9em; color: var(--mute); }
+  .bzrow { display: grid; grid-template-columns: 0.8fr 1.2fr; gap: 2.5mm; margin-top: 1mm; align-items: start; }
+  .cross { display: grid; grid-template-columns: repeat(5, 1fr); gap: 1.2mm; }
+  .cc { background: var(--scrim2); border: .25mm solid var(--line); border-radius: 1.8mm; padding: .9mm 1.4mm; }
+  .cc .pos { color: var(--gold); font-size: .9em; font-weight: 700; }
+  .cc .cd { color: var(--ivory); font-weight: 700; }
+  .cc .cd .o { color: var(--rose); font-weight: 400; font-size: .9em; }
+  .cc .nt { font-size: .92em; line-height: 1.35; }
+  .target { color: var(--ivory); }
+  .themes { display: grid; gap: 1.8mm; grid-template-columns: 1fr 1fr; }
+  .theme .hd { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: .5mm; }
+  .theme .lab { font-size: 1.15em; font-weight: 700; color: var(--ivory); }
+  .theme .sc { color: var(--gold); letter-spacing: .08em; font-weight: 700; }
+  .ly { display: grid; grid-template-columns: 9.5mm 1fr; column-gap: 1.4mm; margin-top: .5mm; }
+  .ly .k { font-size: .9em; font-weight: 700; border-radius: 1.2mm; text-align: center; padding: .1mm 0; align-self: start; margin-top: .25mm; }
+  .k.f { background: rgba(246,241,250,.14); color: var(--ivory); }
+  .k.l { background: rgba(158,211,224,.18); color: var(--teal); }
+  .k.w { background: rgba(205,184,236,.20); color: var(--gold); }
+  .k.s { background: var(--gold); color: #1A0E2C; }
+  .concept { color: var(--teal); font-weight: 700; }
+  .step { font-weight: 700; color: #FFFFFF; }
+  .integ { border-color: rgba(205,184,236,.75); }
+  .tag { display: inline-block; font-size: .9em; font-weight: 700; border-radius: 1.4mm; padding: 0 1.4mm; margin-right: 1mm; }
+  .tag.ok { background: rgba(246,241,250,.18); color: var(--ivory); } .tag.diff { background: rgba(235,168,200,.25); color: var(--rose); }
+  .tag.self { background: var(--gold); color: #1A0E2C; }
+  .frame { margin-top: 1.1mm; padding-top: .9mm; border-top: .3mm dashed var(--line); font-size: .9em; color: var(--ivory); }
+  .answer { border-left: 1.2mm solid var(--gold); }
+  .q { font-weight: 700; color: var(--gold); margin-bottom: .5mm; }
+  .focus { font-size: .9em; color: var(--mute); margin-bottom: .4mm; }
+  .two { display: grid; gap: 1.8mm; grid-template-columns: 1fr 1fr; }
+  .grow { flex: 1; }
+  footer.f1 { margin-top: 2mm; background: var(--scrim2); border: .3mm solid var(--line); border-radius: 2.4mm; padding: 1.8mm 3.2mm;
+              display: flex; gap: 3mm; align-items: center; justify-content: space-between; font-size: 6.6pt; color: var(--ink); }
+  footer a { color: var(--gold); text-decoration: none; }
+  footer .pol { line-height: 1.35; }
+
+  /* ---------------- 2ページ目: 散文詩 ---------------- */
+  .p2 { background-image: url("{{ design.poem_bg }}"); padding: 0 24mm; }
+  .p2 .theme-label { position: absolute; left: 0; right: 0; top: 37mm; text-align: center; color: var(--gold); font-size: 9pt; letter-spacing: .5em; }
+  .p2 .ptitle { position: absolute; left: 30mm; right: 30mm; top: 44mm; text-align: center; color: var(--ivory);
+                font-size: {{ pt.title_pt }}pt; line-height: 1.35; letter-spacing: .12em; font-weight: 600; }
+  .p2 .for { position: absolute; left: 0; right: 0; top: 70mm; text-align: center; color: var(--mute); font-size: 8.4pt; letter-spacing: .2em; }
+  .p2 .orn2 { position: absolute; left: 50%; transform: translateX(-50%); top: {{ pt.orn_top_mm }}mm; width: 95mm; height: auto; }
+  .p2 .pbody { position: absolute; left: 24mm; right: 24mm; top: {{ pt.body_top_mm }}mm; bottom: 26mm; overflow: hidden;
+               font-size: {{ pt.font_pt }}pt; line-height: {{ pt.line_height }}; color: var(--ivory); letter-spacing: .04em; text-align: left; }
+  /* 予言詩（BRIEF §4）: 連ごとに1ブロック、連の中は行ごとに改行。長い行は字下げして折り返す */
+  .p2 .pbody .pin { width: fit-content; max-width: 100%; margin: 0 auto; }
+  .p2 .pbody p.stanza { margin: 0 0 {{ pt.para_gap_em }}em; text-indent: 0; }
+  .p2 .pbody p.stanza span { display: block; padding-left: 1em; text-indent: -1em; }
+  .p2 .pbody p:last-child { margin-bottom: 0; }
+  footer.f2 { position: absolute; left: 24mm; right: 24mm; bottom: 9mm; display: flex; align-items: center; justify-content: center; gap: 3mm;
+              color: var(--mute); font-size: 7pt; letter-spacing: .12em; }
+  .emblem2 { width: 14mm; height: 14mm; display: block; }
+  footer.f2 b { color: var(--gold); letter-spacing: .2em; }
+  footer.f2 .fan { font-size: 6pt; letter-spacing: .02em; }
+</style></head>
+<body>
+<section class="sheet p1" id="page1">
+<div class="hero">
+  <img class="emblem1" src="{{ design.emblem }}" alt="">
+  <div><div class="brand">{{ brand.shop_name }}</div><div class="title serif">{{ brand.title }}</div></div>
+  <div class="who"><div class="name">{{ job.display_name }} さん</div><div>{{ birth_label }}</div><div>発行日 {{ calc.as_of }}</div></div>
+</div>
+<div class="headline serif">{{ t.headline }}</div>
+<img class="orn" src="{{ design.ornament }}" alt="">
+
+<div class="blend card">
+  <div class="mix serif">{% for f in facts %}{{ f.name }}{% if not loop.last %}<span class="x">×</span>{% endif %}{% endfor %}</div>
+  <div><div class="chips">{% for f in facts %}<span class="chip"><b>{{ f.name }}</b>　{{ roles[f.system] }}</span>{% endfor %}</div>
+  <div class="flavor">― {{ r.integration.flavor }}</div></div>
+</div>
+
+{% if gfacts %}<h2>占術ごとの結果</h2>
+<div class="grid">
+{% for f in gfacts %}
+  <div class="card">
+    <h3>{{ f.name }}{% if f.status != 'ok' %}<span class="small">（一部判定不可）</span>{% endif %}</h3>
+    {% if f.table %}<table class="ms"><tr>{% for h in f.table.head %}<th>{{ h }}</th>{% endfor %}</tr>
+      {% for row in f.table.rows %}<tr class="{{ 'big' if loop.index <= 2 else '' }}">{% for c in row %}<td>{{ c }}</td>{% endfor %}</tr>{% endfor %}</table>{% endif %}
+    {% if f.elements_bars %}<div class="bzrow"><div class="bars">{% for b in f.elements_bars %}<div class="row"><span class="el" style="color:{{ b.color }}">{{ b.el }}</span><div class="track"><div class="fill" style="width:{{ b.pct }}%;background:{{ b.color }}"></div></div><span>{{ b.n }}</span></div>{% endfor %}</div>
+    <table class="kv">{% for k, v in f.rows %}<tr><td class="k">{{ k }}</td><td>{{ v }}</td></tr>{% endfor %}</table></div>
+    {% elif f.cross %}<table class="kv"><tr><td class="k">展開</td><td>{{ f.spread_name }}（下に10枚・{{ cross_note }}）</td></tr></table>
+    {% else %}<table class="kv">{% for k, v in f.rows %}<tr><td class="k">{{ k }}</td><td>{{ v }}</td></tr>{% endfor %}</table>{% endif %}
+    {% if t.sys.get(f.system) %}<div style="margin-top:.8mm">{{ t.sys[f.system] }}</div>{% endif %}
+    {% if f.note and not f.cross %}<div class="small">{{ f.note }}</div>{% endif %}
+    {% if t.show_warnings %}{% for w in f.warnings[:2] %}<div class="small">※{{ w }}</div>{% endfor %}{% endif %}
+  </div>
+{% endfor %}
+</div>{% endif %}
+
+{% if cross %}
+<h2><span class="h">タロット — ケルティッククロス</span> <small>占う対象：{{ cross_target }}</small></h2>
+<div class="cross">
+{% for c in cross %}
+  <div class="cc"><div class="pos">{{ c.position_label }}</div><div class="cd">{{ c.name_ja }} <span class="o">{{ c.orientation }}</span></div>
+  {% if t.cross_notes and c.note %}<div class="nt">{{ c.note }}</div>{% endif %}</div>
+{% endfor %}
+</div>
+{% if t.sys.get('tarot') %}<div class="card crossread">{{ t.sys['tarot'] }}{% if t.show_warnings %}{% for f in facts if f.cross %}{% for w in f.warnings[:2] %}<span class="small">　※{{ w }}</span>{% endfor %}{% endfor %}{% endif %}<span class="small">　（{{ cross_note }}）</span></div>{% endif %}
+{% endif %}
+
+<h2>4つのテーマ <small>占術の所見 → 心理学のレンズ → なぜそう言えるか → 小さな一歩</small></h2>
+<div class="themes">
+{% for th in themes %}{% set tt = t.themes[th.key] %}
+  <div class="card theme"><div class="hd"><span><span class="lab">{{ th.label }}</span> <span class="small">根拠：{{ th.basis }}</span></span><span class="sc">{{ '★' * th.score }}{{ '☆' * (5 - th.score) }}</span></div>
+    <div class="ly"><span class="k f">所見</span><div>{{ tt.finding }}</div></div>
+    <div class="ly"><span class="k l">心理</span><div><span class="concept">{{ tt.concept }}</span>｜{{ tt.lens }}</div></div>
+    {% if tt.why %}<div class="ly"><span class="k w">なぜ</span><div>{{ tt.why }}</div></div>{% endif %}
+    <div class="ly"><span class="k s">一歩</span><div class="step">{{ tt.step }}</div></div>
+  </div>
+{% endfor %}
+</div>
+
+<div class="two">
+  <div>
+    <h2>統合解釈 — ブレンドの味わい</h2>
+    <div class="card integ">
+      {% for a in t.agreements %}<div><span class="tag ok">一致</span>{{ a }}</div>{% endfor %}
+      {% for d in t.differences %}<div><span class="tag diff">ずれ</span>{{ d }}</div>{% endfor %}
+      <div><span class="tag self">あなたの回答</span>{% if r.integration.concepts %}<span class="concept">{{ r.integration.concepts|join('・') }}</span>｜{% endif %}{{ t.self_report }}</div>
+      <div style="margin-top:1mm">{{ t.synthesis }}</div>
+      <div class="frame">{{ t.frame }}</div>
+    </div>
+  </div>
+  <div>
+    <h2>占ってほしいことへの答え</h2>
+    <div class="card answer"><div class="q">Q. {{ r.adopted_question }}</div>
+      {% if r.focus_note %}<div class="focus">{{ r.focus_note }}</div>{% endif %}
+      <div class="ly"><span class="k f">所見</span><div>{{ t.answer.finding }}</div></div>
+      <div class="ly"><span class="k l">心理</span><div><span class="concept">{{ t.answer.concept }}</span>｜{{ t.answer.lens }}</div></div>
+      {% if t.answer.why %}<div class="ly"><span class="k w">なぜ</span><div>{{ t.answer.why }}</div></div>{% endif %}
+      <div class="ly"><span class="k s">一歩</span><div class="step">{{ t.answer.step }}</div></div>
+      <div class="small" style="margin-top:1mm">気をつけたいこと：{{ t.caution }}</div>
+    </div>
+  </div>
+</div>
+{% if job.intake_notes %}<div class="small" style="margin-top:1mm">受付時の調整：{{ job.intake_notes|join(' ／ ') }}</div>{% endif %}
+<div class="grow"></div>
+
+<footer class="f1">
+  <div>
+    <div><b style="color:var(--gold)">{{ brand.shop_name }}</b>{% if social.youtube_url %}　<a href="{{ social.youtube_url }}">YouTube</a>{% endif %}{% if social.x_url %}　<a href="{{ social.x_url }}">X @{{ social.x_url.rstrip('/').split('/')[-1] }}</a>{% endif %}　<span style="color:var(--mute)">2ページ目に、あなたへの詩があります</span></div>
+    <div class="pol">{{ policy.short }}</div>
+    <div class="pol">{{ fan_notice }}</div>
+  </div>
+</footer>
+</section>
+
+<section class="sheet p2" id="page2">
+  <div class="theme-label serif">{{ poem_theme }}</div>
+  <div class="ptitle serif" id="poem-title">{{ poem.title }}</div>
+  <div class="for">{{ job.display_name }} さんへ</div>
+  <img class="orn2" src="{{ design.ornament }}" alt="">
+  <div class="pbody serif" id="poem-body"><div class="pin">{% for st in poem_stanzas %}<p class="stanza">{% for ln in st %}<span>{{ ln }}</span>{% endfor %}</p>{% endfor %}</div></div>
+  <footer class="f2"><img class="emblem2" src="{{ design.emblem }}" alt=""><span><b>{{ brand.shop_name }}</b>　{{ brand.title }}　{{ calc.as_of }}<br><span class="fan">{{ fan_notice }}</span></span></footer>
+</section>
+</body></html>

@@ -1,0 +1,30 @@
+{
+ "_note": "MCP 版の設定（tools/sync_from_app.py が生成）。秘密情報・連絡先は含めない。",
+ "brand": {
+  "shop_name": "天使の自動筆記（ラブリーゴーストライター）",
+  "title": "自動筆記鑑定書",
+  "tagline": "あなたの未来は、もう誰かの手で書きはじめられている。",
+  "contact_email": "ローカル出力のみ（サーバー保存なし）"
+ },
+ "claude": {
+  "model": "claude-opus-5-5",
+  "effort": "medium"
+ },
+ "render": {
+  "browser_channel": "msedge",
+  "fallback_channel": "chrome",
+  "png_width_px": 3307,
+  "png_min_width_px": 1240,
+  "digital_min_font_pt": 6.0
+ },
+ "print": {
+  "margin_mm": 14,
+  "min_font_pt": 8.5,
+  "min_line_pt": 0.8
+ },
+ "retention_days": 0,
+ "social": {
+  "youtube_url": "https://www.youtube.com/@kokuren_3rd",
+  "x_url": "https://x.com/wangoroge333"
+ }
+}

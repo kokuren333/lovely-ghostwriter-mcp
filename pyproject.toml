@@ -1,0 +1,41 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "lovely-ghostwriter-mcp"
+version = "0.1.0"
+description = "天使の自動筆記（ラブリーゴーストライター）: 占術ブレンド鑑定の MCP サーバー（HUNTER×HUNTER 非公式ファンパロディ）"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+  "mcp>=1.2",
+  "pydantic>=2",
+  "anyio>=4",
+  "jinja2>=3.1",
+  "jsonschema>=4",
+  "playwright>=1.40",
+  "pymupdf>=1.24",
+  "segno>=1.5",
+  "numpy>=1.24",
+]
+
+[project.optional-dependencies]
+anthropic = ["anthropic>=1.0"]
+dev = ["pytest>=8"]
+
+[project.scripts]
+lovely-ghostwriter-mcp = "lovely_ghostwriter_mcp.server:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+lovely_ghostwriter_mcp = [
+  "_vendor/**/*.json", "_vendor/**/*.j2", "_vendor/**/*.md", "_vendor/**/*.txt",
+  "_vendor/**/*.jpg", "_vendor/**/*.png", "_vendor/**/*.svg",
+  "_vendor/**/*.ttf", "_vendor/**/*.otf", "_vendor/**/*.woff2",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

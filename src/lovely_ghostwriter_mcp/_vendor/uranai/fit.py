@@ -60,14 +60,15 @@ DIGITAL_LEVELS = [  # 1ページ目（プロフィール）用。AMENDMENT_09: �
 # 2ページ目（予言詩・BRIEF §4）用。詩は削らず、文字サイズ・行間・連の間隔・本文の開始位置だけで1ページに収める。
 # 生成側の上限（600〜900字・3〜8連・合計32行・1行40字以内。psych.POEM_*）と併用し、W0 で典型（4〜6連×4行）、
 # W3 で7連×4行、W6 で上限（8連×4行・900字）が収まる設計。行は折り返さない幅（本文幅 162mm）。
+# AMENDMENT_P2PII: 宛名行（旧 top 70mm）を削除したので、飾り罫と本文をタイトルの下へ 14mm 詰めた
 POEM_LEVELS = [
-    {"font_pt": 10.6, "line_height": 1.9, "para_gap_em": 1.1, "title_pt": 17, "orn_top_mm": 92, "body_top_mm": 99},
-    {"font_pt": 10.2, "line_height": 1.85, "para_gap_em": 1.0, "title_pt": 17, "orn_top_mm": 90, "body_top_mm": 97},
-    {"font_pt": 9.8, "line_height": 1.8, "para_gap_em": 0.95, "title_pt": 16, "orn_top_mm": 88, "body_top_mm": 95},
-    {"font_pt": 9.4, "line_height": 1.75, "para_gap_em": 0.9, "title_pt": 16, "orn_top_mm": 86, "body_top_mm": 93},
-    {"font_pt": 9.0, "line_height": 1.7, "para_gap_em": 0.85, "title_pt": 15, "orn_top_mm": 84, "body_top_mm": 90},
-    {"font_pt": 8.6, "line_height": 1.65, "para_gap_em": 0.8, "title_pt": 15, "orn_top_mm": 82, "body_top_mm": 88},
-    {"font_pt": 8.2, "line_height": 1.6, "para_gap_em": 0.7, "title_pt": 14, "orn_top_mm": 82, "body_top_mm": 88},
+    {"font_pt": 10.6, "line_height": 1.9, "para_gap_em": 1.1, "title_pt": 17, "orn_top_mm": 78, "body_top_mm": 85},
+    {"font_pt": 10.2, "line_height": 1.85, "para_gap_em": 1.0, "title_pt": 17, "orn_top_mm": 76, "body_top_mm": 83},
+    {"font_pt": 9.8, "line_height": 1.8, "para_gap_em": 0.95, "title_pt": 16, "orn_top_mm": 74, "body_top_mm": 81},
+    {"font_pt": 9.4, "line_height": 1.75, "para_gap_em": 0.9, "title_pt": 16, "orn_top_mm": 72, "body_top_mm": 79},
+    {"font_pt": 9.0, "line_height": 1.7, "para_gap_em": 0.85, "title_pt": 15, "orn_top_mm": 70, "body_top_mm": 76},
+    {"font_pt": 8.6, "line_height": 1.65, "para_gap_em": 0.8, "title_pt": 15, "orn_top_mm": 68, "body_top_mm": 74},
+    {"font_pt": 8.2, "line_height": 1.6, "para_gap_em": 0.7, "title_pt": 14, "orn_top_mm": 68, "body_top_mm": 74},
 ]
 LEVELS = PRINT_LEVELS  # 後方互換
 

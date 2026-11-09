@@ -99,7 +99,7 @@
   .p2 .theme-label { position: absolute; left: 0; right: 0; top: 37mm; text-align: center; color: var(--gold); font-size: 9pt; letter-spacing: .5em; }
   .p2 .ptitle { position: absolute; left: 30mm; right: 30mm; top: 44mm; text-align: center; color: var(--ivory);
                 font-size: {{ pt.title_pt }}pt; line-height: 1.35; letter-spacing: .12em; font-weight: 600; }
-  .p2 .for { position: absolute; left: 0; right: 0; top: 70mm; text-align: center; color: var(--mute); font-size: 8.4pt; letter-spacing: .2em; }
+  /* AMENDMENT_P2PII: 2ページ目は SNS シェア前提のため宛名（氏名）行を置かない。氏名・生年月日は1ページ目だけ */
   .p2 .orn2 { position: absolute; left: 50%; transform: translateX(-50%); top: {{ pt.orn_top_mm }}mm; width: 95mm; height: auto; }
   .p2 .pbody { position: absolute; left: 24mm; right: 24mm; top: {{ pt.body_top_mm }}mm; bottom: 26mm; overflow: hidden;
                font-size: {{ pt.font_pt }}pt; line-height: {{ pt.line_height }}; color: var(--ivory); letter-spacing: .04em; text-align: left; }
@@ -209,7 +209,6 @@
 <section class="sheet p2" id="page2">
   <div class="theme-label serif">{{ poem_theme }}</div>
   <div class="ptitle serif" id="poem-title">{{ poem.title }}</div>
-  <div class="for">{{ job.display_name }} さんへ</div>
   <img class="orn2" src="{{ design.ornament }}" alt="">
   <div class="pbody serif" id="poem-body"><div class="pin">{% for st in poem_stanzas %}<p class="stanza">{% for ln in st %}<span>{{ ln }}</span>{% endfor %}</p>{% endfor %}</div></div>
   <footer class="f2"><img class="emblem2" src="{{ design.emblem }}" alt=""><span><b>{{ brand.shop_name }}</b>　{{ brand.title }}　{{ calc.as_of }}<br><span class="fan">{{ fan_notice }}</span></span></footer>

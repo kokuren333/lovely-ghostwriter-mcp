@@ -13,11 +13,13 @@
 """
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 import numpy as np
 import pymupdf
 
+from . import psych
 from .config import settings
 
 
@@ -124,8 +126,36 @@ A4_TOL_PT = 1.5            # +-0.5mm
 ASPECT_TOL = 0.01          # PNG のアスペクト比誤差 < 1%
 
 
-def check_digital_pdf(pdf: Path, poem_title: str | None = None, expect_pages: int = DIGITAL_PAGES) -> dict:
-    """デジタル版PDF: 各ページA4判・ちょうど2ページ（AMENDMENT_09）。2ページ目に詩のタイトル。文字サイズの最小値も記録する."""
+def p2_pii_hits(text: str, job: dict | None) -> list[str]:
+    """AMENDMENT_P2PII: 2ページ目（SNS シェア前提）のテキストに含まれる個人情報の種別（値は返さない＝qa.json に残さない）.
+    氏名・ふりがな（psych.name_terms と同じ規則）、メールアドレス、生年月日（各表記）、出生時刻、出生地。照合は空白を除いて行う."""
+    if not job:
+        return []
+    t = psych._norm(text)
+    hits = set(psych.name_hits(text, job))
+    email = str(job.get("email") or "").strip().lower()
+    if email and email in t.lower():
+        hits.add("メールアドレス")
+
+    m = re.match(r"^(\d{4})-(\d{2})-(\d{2})$", str(job.get("birth_date") or "").strip())
+    if m:
+        y, mo, d = m.groups()
+        mi, di = int(mo), int(d)
+        forms = {f"{y}-{mo}-{d}", f"{y}/{mo}/{d}", f"{y}/{mi}/{di}", f"{y}.{mo}.{d}", f"{y}年{mo}月{d}日", f"{y}年{mi}月{di}日", f"{y}{mo}{d}"}
+        if any(f in t for f in forms) or re.search(rf"(?<!\d)0?{mi}月0?{di}日(?:生|に生|のお?誕生)", t):
+            hits.add("生年月日")
+    mt = re.match(r"^(\d{1,2}):(\d{2})$", str(job.get("birth_time") or "").strip())
+    if mt and re.search(rf"(?<!\d)0?{int(mt.group(1))}(?::{mt.group(2)}|時0?{int(mt.group(2))}分)(?!\d)", t):
+        hits.add("出生時刻")
+    place = psych._norm(job.get("birth_place") or "")
+    if place and place in t:
+        hits.add("出生地")
+    return sorted(hits)
+
+
+def check_digital_pdf(pdf: Path, poem_title: str | None = None, expect_pages: int = DIGITAL_PAGES, job: dict | None = None) -> dict:
+    """デジタル版PDF: 各ページA4判・ちょうど2ページ（AMENDMENT_09）。2ページ目に詩のタイトル。文字サイズの最小値も記録する.
+    job を渡すと、2ページ目（SNS シェア前提）に本人の個人情報が出ていないことも検査する（AMENDMENT_P2PII）。"""
     res = {"file": pdf.name, "violations": []}
     if not pdf.exists():
         res["violations"].append("デジタル版PDFがありません")
@@ -153,6 +183,10 @@ def check_digital_pdf(pdf: Path, poem_title: str | None = None, expect_pages: in
         if poem_title is not None:
             norm = lambda x: "".join((x or "").split())
             res["poem_on_page2"] = len(texts) >= 2 and bool(norm(poem_title)) and norm(poem_title) in norm(texts[1])
+        if job is not None and len(texts) >= 2:
+            # digital_p2.png はこの PDF の2ページ目をそのままラスタライズしたもの（pdf_to_pngs）なので、PDF の2ページ目のテキストで両方を担保する
+            res["p2_pii_hits"] = p2_pii_hits(texts[1], job)
+            res["p2_name_checked"] = bool(psych.name_terms(job))
     finally:
         doc.close()
     res["page_count_ok"] = res["pages"] == expect_pages
@@ -164,6 +198,8 @@ def check_digital_pdf(pdf: Path, poem_title: str | None = None, expect_pages: in
         res["violations"].append(f"テキスト抽出できる文字が少ないページがある: {res['text_chars_per_page']}")
     if poem_title is not None and not res.get("poem_on_page2"):
         res["violations"].append("2ページ目に詩のタイトルが見つからない（2ページ目＝詩ページ）")
+    if res.get("p2_pii_hits"):
+        res["violations"].append(f"2ページ目（SNS シェア用）に個人情報が含まれている: {'・'.join(res['p2_pii_hits'])}")
     if not a4:
         res["violations"].append(f"デジタル版PDFのページサイズが A4 ではない: {res['page_size_mm']}mm")
     min_font = settings()["render"].get("digital_min_font_pt", 6.0)
@@ -173,10 +209,10 @@ def check_digital_pdf(pdf: Path, poem_title: str | None = None, expect_pages: in
     return res
 
 
-def check_digital(pdf: Path, pngs: list[Path], poem_title: str | None = None) -> dict:
+def check_digital(pdf: Path, pngs: list[Path], poem_title: str | None = None, job: dict | None = None) -> dict:
     """デジタル版: PDF＝A4・2ページ（2ページ目＝詩）、PNG＝ページごとの2ファイル（AMENDMENT_17）。
     各 PNG は A4 単ページの縦横比（理論値 A4高さ/A4幅 に対する誤差 < 1%）かつ幅 ≥ settings.render.png_width_px。"""
-    res = check_digital_pdf(pdf, poem_title)
+    res = check_digital_pdf(pdf, poem_title, job=job)
     res.pop("file", None)
     res["pdf_pages"] = res.get("pages")
     target = A4_PT[1] / A4_PT[0]  # A4 単ページの理論値

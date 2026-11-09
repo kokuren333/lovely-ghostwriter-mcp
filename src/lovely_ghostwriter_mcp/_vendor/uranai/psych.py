@@ -312,6 +312,8 @@ def check_poem_motifs(poem, job: dict, calc: dict | None = None) -> dict:
         errs.append(f"1行が長すぎます（{POEM_MAX_LINE_CHARS}字以内）: {long_lines[0][:24]}…")
     return {"motifs": rows, "valid": len(valid), "from_input": len(from_input), "required": POEM_MIN_MOTIFS,
             "hits": [r["symbol"] for r in valid], "chars": n, "stanzas": len(stz), "lines": nlines, "verbatim": verb,
+            # AMENDMENT_P2PII: 氏名・ふりがなの混入（種別のみ）。不合格の扱いは check_poem_literary（hard＝描画しない）
+            "name_hits": name_hits((poem.get("title") or "") + "\n" + body, job),
             "ok": not errs, "errors": errs}
 
 
@@ -427,7 +429,74 @@ def check_poem_literary(poem, job: dict | None = None) -> list[str]:
             m = POEM_SECOND_PERSON_ADVICE.search(stripped)
             if m and not any(a <= start + m.start() < b for a, b in own_spans):
                 add(start, sent, "二人称への直接の働きかけ（助言文脈）")
+    out += poem_name_errors(poem, job) if job else []  # AMENDMENT_P2PII: 2ページ目（SNS シェア前提）に氏名・ふりがなを出さない
     return out + check_poem_doom(body)
+
+
+# ---------------------------------------------------------------- AMENDMENT_P2PII: 2ページ目の個人情報
+# 2ページ目（予言詩ページ／digital_p2.png）は SNS でシェアされる前提。本人の氏名・ふりがなが詩（タイトル含む）に文字列として
+# 出てはならない。結果・ログには値を書かず、種別（姓・名・ふりがな等）だけを返す（ログ／qa.json が送信後の PII 削除後も残るため）。
+_HONORIFIC = r"(?=(?:さん|様|さま|ちゃん|くん|君|氏|殿))"
+
+
+def _kata(s: str) -> str:
+    return "".join(chr(ord(c) + 0x60) if "ぁ" <= c <= "ゖ" else c for c in s)
+
+
+def name_terms(job: dict | None) -> list[tuple[str, re.Pattern]]:
+    """本人の氏名・ふりがなの検出パターン [(種別, 正規表現)]。照合は空白を除いた本文に対して行う.
+    - フルネーム（漢字・ふりがな・カタカナ表記）: どこに出ても一致
+    - 姓／名の単独: 漢字は2字以上、かなは4字以上ならどこに出ても一致（かな3字以下は「しょう」→「でしょう」のように
+      一般語と衝突するため）。それより短いものは「さん」「様」等の敬称が続く場合だけ一致"""
+    if not job:
+        return []
+    s = lambda k: _norm(job.get(k) or "")
+    raw_full, raw_kana = str(job.get("display_name") or "").strip(), str(job.get("name_kana") or "").strip()
+    out: list[tuple[str, str, bool]] = []  # (種別, 文字列, 敬称つきのみ)
+    for label, v in (("氏名", s("display_name")), ("ふりがな", s("name_kana")), ("ふりがな", _kata(s("name_kana")))):
+        if v:
+            out.append((label, v, False))
+    kanji_parts = {("姓", s("surname_kanji")), ("名", s("given_kanji"))}
+    sp = [p for p in re.split(r"[\s　]+", raw_full) if p]
+    if len(sp) > 1:
+        kanji_parts |= {("姓", _norm(sp[0])), ("名", _norm(sp[-1]))}
+    for label, p in kanji_parts:
+        if p:
+            out.append((label, p, len(p) < 2))
+    kp = [p for p in re.split(r"[\s　]+", raw_kana) if p]
+    if len(kp) > 1:
+        for label, p in (("姓（ふりがな）", kp[0]), ("名（ふりがな）", kp[-1])):
+            for v in {p, _kata(p)}:
+                out.append((label, v, len(v) < 4))
+    seen: set[tuple[str, bool]] = set()
+    pats: list[tuple[str, re.Pattern]] = []
+    for label, v, hon in sorted(out, key=lambda x: -len(x[1])):
+        if (v, hon) in seen:
+            continue
+        seen.add((v, hon))
+        pats.append((label, re.compile(re.escape(v) + (_HONORIFIC if hon else ""))))
+    return pats
+
+
+def name_hits(text: str, job: dict | None) -> list[str]:
+    """text（空白を除いて照合）に含まれる本人の氏名・ふりがなの種別（値は返さない）."""
+    t = _norm(text)
+    return sorted({label for label, rx in name_terms(job) if rx.search(t)})
+
+
+def poem_name_errors(poem, job: dict | None) -> list[str]:
+    """予言詩（タイトル＋各連）に本人の氏名・ふりがなが出ていれば理由を返す（描画を止める系＝hard）."""
+    if not job:
+        return []
+    parts = [("タイトル", poem.get("title") or "")] if isinstance(poem, dict) else []
+    parts += [(f"{i + 1}連目", "\n".join(st)) for i, st in enumerate(poem_stanzas(poem))] if isinstance(poem, dict) else [("本文", poem or "")]
+    out = []
+    for where, text in parts:
+        hits = name_hits(text, job)
+        if hits:
+            out.append(f"詩（{where}）に本人の{'・'.join(hits)}が文字列として含まれています — 2ページ目は SNS でシェアされるため"
+                       "氏名・ふりがなは書かない（その語を別の言葉・象徴に置き換える）")
+    return out
 
 
 def normalize_concept(name: str) -> str | None:
